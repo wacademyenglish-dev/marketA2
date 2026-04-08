@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WOLF LABS | Main Series: Grocery Shopping A1/A2</title>
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- WOLF LABS SUPREME ENGINE (MODERN MARKET EDITION) --- */
+        :root {
+            --bg-base: #0f172a; 
+            --brand-main: #10b981; /* Emerald Green */
+            --accent: #f59e0b; /* Amber */
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --correct: #10b981; 
+            --incorrect: #ef4444; 
+            --text-main: #f8fafc;
+            --text-dim: #cbd5e1;
+            --glass-bg: rgba(15, 23, 42, 0.85); 
+            --glass-border: rgba(255, 255, 255, 0.1); 
+            --font-display: 'Montserrat', sans-serif;
+            --font-body: 'Outfit', sans-serif;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        button, input, select, textarea { font-family: var(--font-body); outline: none; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            overflow: hidden;
+            height: 100vh; width: 100vw;
+            display: flex; flex-direction: column;
+            position: fixed; 
+            perspective: 1000px;
+        }
+
+        /* CORRECTION MODE */
+        .correction-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 9998; box-shadow: inset 0 0 0 rgba(239, 68, 68, 0); transition: box-shadow 0.4s ease; }
+        body.correction-mode .correction-overlay { box-shadow: inset 0 0 150px 20px rgba(239, 68, 68, 0.6); }
+
+        /* BACKGROUNDS */
+        .ambient-orbs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+        .bg-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover; background-position: center; opacity: 0.15; filter: grayscale(50%) brightness(0.6);
+        }
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(15,23,42,0.95) 100%); z-index: 2;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 30px; height: 75px; background: rgba(15,23,42,0.8); backdrop-filter: blur(30px);
+            position: fixed; top: 20px; left: 2%; width: 96%; z-index: 100;
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .logo { color: #fff; font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;}
+        .logo i { color: var(--brand-main); }
+        .logo span { background: var(--brand-main); color: #000; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
+        .nav-controls { display: flex; gap: 10px; align-items: center;}
+        .teacher-tool {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #cbd5e1; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+            font-size: 1rem; transition: 0.3s; display: flex; align-items: center; justify-content: center;
+        }
+        .teacher-tool:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .teacher-tool.active-tool { background: var(--brand-main); color: #000; border-color: var(--brand-main); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* MAIN CONTAINER & SLIDES */
+        .main-container { flex: 1; position: relative; z-index: 10; padding: 110px 5% 100px 5%; display: flex; align-items: center; justify-content: center; transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);}
+        .slide { height: 100%; width: 100%; max-width: 1100px; display: none; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transform: translateY(20px); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide.active { display: flex; opacity: 1; transform: translateY(0); }
+
+        .glass-panel {
+            background: var(--glass-bg); backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border); border-top: 3px solid var(--brand-main);
+            padding: 50px 60px; border-radius: 30px; width: 100%; max-height: 82vh; 
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 20px 50px rgba(255,255,255,0.02);
+            display: flex; flex-direction: column; position: relative; overflow-y: auto; scrollbar-width: none; align-items: center;
+        }
+        .glass-panel::-webkit-scrollbar { display: none; }
+        .glass-panel > * { flex-shrink: 0; }
+
+        /* TYPOGRAPHY */
+        h1 { font-family: var(--font-display); font-size: 4.5rem; color: #fff; line-height: 1; margin-bottom: 20px; text-align: center; letter-spacing: -2px; }
+        h2 { font-family: var(--font-display); font-size: 2.2rem; color: var(--brand-main); margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 15px; text-transform: uppercase;}
+        p { font-size: 1.3rem; color: var(--text-dim); line-height: 1.6; text-align: center; margin-bottom: 25px;}
+
+        /* BUTTONS & INPUTS */
+        .btn-start { 
+            padding: 20px 45px; border: none; border-radius: 15px; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 12px; background: var(--brand-main); color: #000; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        .btn-start:hover { transform: translateY(-5px); filter: brightness(1.1); box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5); }
+        .input-name { width: 100%; max-width: 400px; padding: 18px 30px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-size: 1.4rem; text-align: center; margin-bottom: 30px; transition: 0.3s;}
+        .input-name:focus { border-color: var(--brand-main); box-shadow: 0 0 25px var(--accent-glow); }
+
+        /* VIDEO WRAPPER */
+        .video-wrapper { position: relative; width: 100%; max-width: 850px; aspect-ratio: 16/9; background: #000; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.8); margin-bottom: 25px; z-index: 50; }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; pointer-events: auto !important; z-index: 60; }
+        
+        .speaking-hub { margin-top: 30px; padding: 30px; background: rgba(0,0,0,0.5); border-radius: 20px; border-left: 5px solid var(--accent); text-align: left; width: 100%; display: none; animation: popIn 0.5s ease;}
+        .starter-btn { background: rgba(245, 158, 11, 0.1); border: 1px dashed var(--accent); color: var(--accent); padding: 12px 25px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-family: var(--font-code); font-weight: 700; font-size: 1rem; display: inline-flex; align-items: center; gap: 10px; margin-top: 15px;}
+        .starter-btn:hover { background: var(--accent); color: #000; }
+        .starter-content { display: none; margin-top: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); animation: popIn 0.3s forwards;}
+        .starter-content.active { display: block; }
+        .starter-phrase { font-family: var(--font-code); font-size: 1.4rem; color: #fff; font-weight: 700; display: block; margin-bottom: 10px; border-left: 3px solid var(--brand-main); padding-left: 15px;}
+
+        /* --- THEMATIC GAMES CSS --- */
+        .ww-grid { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;}
+        .ww-box { width: 160px; height: 160px; background: #1e293b; border-radius: 20px; border: 2px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .ww-box:hover { border-color: var(--brand-main); transform: translateY(-10px); background: #283548; box-shadow: 0 10px 20px var(--accent-glow);}
+        .ww-box i { font-size: 3rem; color: var(--brand-main); margin-bottom: 10px; }
+        .ww-box.opened { opacity: 0.2; pointer-events: none; }
+        
+        /* 0. Grammar Sandbox */
+        .grammar-switch { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; flex-wrap: wrap; width: 100%; max-width: 900px; margin-inline: auto;}
+        .switch-btn { background: rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); color: white; padding: 15px 40px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; cursor: pointer; transition: 0.3s; font-family: var(--font-code); box-shadow: 0 8px 20px rgba(0,0,0,0.3);}
+        .switch-btn.active { background: var(--brand-main); color: #020617; border-color: var(--brand-main); box-shadow: 0 0 30px var(--accent-glow); transform: scale(1.05);}
+        .sandbox-display { background: rgba(0,0,0,0.5); padding: 50px; border-radius: 24px; border-left: 6px solid var(--brand-main); min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 30px rgba(0,0,0,0.6); text-align: center; width: 100%; max-width: 900px; margin-inline: auto;}
+
+        /* 1. The Weighing Scale (Much vs Many) */
+        .scale-container { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 800px; margin: 0 auto;}
+        .scale-display { background: #000; border: 4px solid #334155; border-radius: 15px; width: 100%; max-width: 400px; padding: 20px; font-family: var(--font-code); font-size: 3rem; font-weight: 900; color: var(--brand-main); text-align: center; box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.2); text-transform: uppercase; letter-spacing: 3px; min-height: 100px; display: flex; align-items: center; justify-content: center;}
+        .scale-controls { display: flex; gap: 20px; width: 100%; justify-content: center;}
+        .scale-btn { padding: 20px 40px; font-size: 2rem; font-family: var(--font-display); font-weight: 900; border-radius: 20px; border: 4px solid var(--glass-border); background: #1e293b; color: #fff; cursor: pointer; transition: 0.2s; flex: 1; max-width: 300px;}
+        .scale-btn:hover { background: #334155; transform: translateY(-5px);}
+        .scale-btn:active { transform: scale(0.95); }
+        .scale-baskets { display: flex; gap: 40px; width: 100%; justify-content: center; margin-top: 20px;}
+        .basket { flex: 1; min-height: 150px; border: 3px dashed rgba(255,255,255,0.2); border-radius: 20px; padding: 20px; display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; position: relative; background: rgba(0,0,0,0.3);}
+        .basket::before { content: attr(data-label); position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--bg-base); padding: 0 15px; font-family: var(--font-code); font-weight: 800; color: var(--text-dim); font-size: 1.2rem;}
+        .scale-item-chip { background: var(--brand-main); color: #000; font-family: var(--font-code); font-weight: 700; padding: 8px 15px; border-radius: 8px; font-size: 1.1rem; animation: popIn 0.3s ease-out;}
+
+        /* 2. Checkout Conveyor Belt (Syntax) */
+        .conveyor-container { width: 100%; max-width: 900px; margin: 0 auto 30px;}
+        .grocery-bag { min-height: 120px; width: 100%; border: 3px dashed var(--brand-main); border-radius: 10px 10px 40px 40px; background: rgba(16, 185, 129, 0.05); margin-bottom: 30px; display: flex; flex-wrap: wrap; gap: 10px; padding: 25px; align-items: center; justify-content: center; transition: 0.3s;}
+        .grocery-bag.success { background: rgba(16, 185, 129, 0.2); border-style: solid; box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.3); }
+        .conveyor-belt { height: 100px; width: 100%; background: #1e293b; border-top: 4px solid #475569; border-bottom: 4px solid #475569; position: relative; display: flex; align-items: center; justify-content: center; gap: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);}
+        .conveyor-belt::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,0,0,0.3) 40px, rgba(0,0,0,0.3) 80px); opacity: 0.5; animation: moveBelt 3s linear infinite;}
+        .grocery-item { z-index: 2; padding: 12px 25px; background: #fff; border: 2px solid #cbd5e1; border-radius: 8px; font-family: var(--font-code); font-weight: 800; color: #000; font-size: 1.3rem; cursor: pointer; transition: 0.2s; box-shadow: 2px 5px 10px rgba(0,0,0,0.3);}
+        .grocery-item:hover { transform: translateY(-5px); border-color: var(--brand-main); }
+        @keyframes moveBelt { from { background-position: 0 0; } to { background-position: -80px 0; } }
+
+        /* 3. The Supermarket Receipt (Truth Board) */
+        .receipt-container { width: 100%; max-width: 500px; margin: 0 auto;}
+        .receipt-paper { background: #fdf6e3; color: #111; font-family: 'Courier New', Courier, monospace; padding: 40px 30px; margin: 0 auto; border-top: 10px dashed #d1d5db; border-bottom: 10px dashed #d1d5db; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: left; position: relative;}
+        .receipt-header { text-align: center; margin-bottom: 30px; border-bottom: 2px dashed #94a3b8; padding-bottom: 15px;}
+        .receipt-header h3 { font-size: 1.8rem; margin: 0; font-weight: 900;}
+        .receipt-header p { font-size: 1rem; margin: 5px 0 0; color: #475569;}
+        .receipt-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dotted #94a3b8; padding: 20px 0; font-weight: bold; font-size: 1.2rem; cursor: pointer; transition: 0.2s; position: relative;}
+        .receipt-item:hover { background: rgba(0,0,0,0.05); padding-left: 10px; }
+        .receipt-text { flex: 1; line-height: 1.4; padding-right: 15px;}
+        .receipt-action { display: none; gap: 10px;}
+        .receipt-item.active .receipt-action { display: flex; }
+        .receipt-item.active .receipt-text { opacity: 0.3; }
+        .stamp-btn { padding: 8px 15px; font-weight: 900; font-family: var(--font-display); cursor: pointer; border: 2px solid; border-radius: 5px; background: transparent; transition: 0.2s;}
+        .stamp-btn.t-btn { color: var(--correct); border-color: var(--correct); }
+        .stamp-btn.f-btn { color: var(--incorrect); border-color: var(--incorrect); }
+        .stamp-btn:hover { background: rgba(0,0,0,0.1); transform: scale(1.05);}
+        .stamp-mark { position: absolute; right: 10px; font-family: var(--font-display); font-size: 2rem; font-weight: 900; padding: 2px 10px; border: 4px solid; border-radius: 8px; opacity: 0.8; animation: stampDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; display: none; pointer-events: none;}
+        @keyframes stampDown { 0% { transform: scale(3); opacity: 0; } 100% { transform: scale(1) rotate(-15deg); opacity: 0.8; } }
+
+        /* 4. Aisle Navigator (Scenarios) */
+        .aisle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin: 0 auto;}
+        .aisle-sign { background: #1e293b; border: 3px solid var(--glass-border); border-radius: 15px; padding: 30px 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;}
+        .aisle-sign::before { content: attr(data-number); position: absolute; top: -10px; right: -10px; font-size: 5rem; font-family: var(--font-display); font-weight: 900; color: rgba(255,255,255,0.05); z-index: 1;}
+        .aisle-sign i { font-size: 3.5rem; color: #fff; margin-bottom: 15px; z-index: 2; position: relative; transition: 0.3s;}
+        .aisle-sign span { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; color: #fff; display: block; z-index: 2; position: relative;}
+        .aisle-sign:hover { border-color: var(--brand-main); background: #283548; transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.5);}
+        .aisle-sign:hover i { color: var(--brand-main); transform: scale(1.1);}
+
+        /* 5. Fill The Cart */
+        .cart-container { display: flex; gap: 30px; width: 100%; max-width: 900px; margin-top: 20px; text-align: left;}
+        .shopping-list { flex: 1; background: #fdf6e3; color: #000; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: rotate(-2deg);}
+        .shopping-list h3 { font-family: var(--font-display); font-size: 1.8rem; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;}
+        .list-item { font-size: 1.4rem; font-family: var(--font-code); font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; transition: 0.3s;}
+        .list-item.checked { color: var(--brand-main); text-decoration: line-through; opacity: 0.7;}
+        .shelves { flex: 2; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;}
+        .shelf-item { background: #1e293b; border: 2px solid var(--glass-border); border-radius: 15px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s;}
+        .shelf-item:hover { border-color: var(--brand-main); background: #283548; transform: translateY(-5px);}
+        .shelf-item i { font-size: 3rem; color: #fff; margin-bottom: 10px; transition: 0.3s;}
+        .shelf-item:hover i { color: var(--brand-main); transform: scale(1.1);}
+        .shelf-item.in-cart { opacity: 0; pointer-events: none; transform: scale(0.5);}
+
+        /* 6. Memory Match Grid */
+        .memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; width: 100%; max-width: 700px; margin: 0 auto 30px; perspective: 1000px;}
+        .mem-card { height: 120px; position: relative; cursor: pointer; transform-style: preserve-3d; transition: transform 0.5s; }
+        .mem-card.flipped { transform: rotateY(180deg); pointer-events: none;}
+        .mem-front, .mem-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-family: var(--font-body); font-weight: 700; font-size: 1.3rem; border: 2px solid rgba(255,255,255,0.1); }
+        .mem-front { background: rgba(30, 41, 59, 0.9); color: var(--brand-main); font-size: 3rem;}
+        .mem-back { background: var(--brand-main); color: #0f172a; transform: rotateY(180deg); text-align: center; padding: 10px; font-size: 2.5rem;}
+        .mem-back span { font-size: 1.2rem; }
+        .mem-card.matched .mem-back { background: var(--correct); border-color: var(--correct); box-shadow: 0 0 20px var(--accent-glow);}
+
+        /* 7. Picture Reveal */
+        .reveal-area { width: 100%; max-width: 600px; aspect-ratio: 16/9; margin: 0 auto 30px; position: relative; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); background-color: #334155; background-image: url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop'); background-size: cover; background-position: center;}
+        .reveal-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 2px; padding: 2px;}
+        .reveal-tile { background: #1e293b; display: flex; align-items: center; justify-content: center; color: #fff; font-family: var(--font-display); font-size: 2rem; cursor: pointer; transition: opacity 0.4s; }
+        .reveal-tile:hover { background: #334155; }
+
+        /* 8. Phone UI */
+        .phone-ui { width: 100%; max-width: 400px; height: 600px; background: #0f172a; border: 14px solid #1e293b; border-radius: 45px; position: relative; margin: 0 auto; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.9); }
+        .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 25px; background: #1e293b; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; z-index: 20; }
+        .phone-top-bar { height: 80px; background: rgba(31, 41, 55, 0.98); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 15px; font-weight: 800; font-size: 1.2rem; z-index: 10; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .phone-chat-area { flex: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scrollbar-width: none; }
+        .phone-msg { padding: 15px 22px; border-radius: 20px; max-width: 85%; font-size: 1.15rem; line-height: 1.4; animation: popIn 0.3s ease-out forwards; font-weight: 500; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.2);}
+        .phone-msg.received { background: #334155; color: #fff; align-self: flex-start; border-bottom-left-radius: 6px; }
+        .phone-msg.sent { background: var(--brand-main); color: #020617; align-self: flex-end; border-bottom-right-radius: 6px; font-weight: 700; display: none;}
+        .phone-msg.sent.visible { display: block; }
+        .phone-options-area { padding: 25px; background: rgba(15, 23, 42, 0.98); border-top: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 15px; z-index: 10; }
+        .phone-opt-btn { background: rgba(30, 41, 59, 0.8); border: 2px solid rgba(255,255,255,0.1); color: #fff; padding: 18px 25px; border-radius: 16px; font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; text-align: left; display: block; width: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.3);}
+        .phone-opt-btn:hover { background: rgba(16, 185, 129, 0.1); border-color: var(--brand-main); color: var(--brand-main); transform: translateY(-2px); }
+        .typing-indicator { display: flex; gap: 6px; padding: 16px 25px; background: #334155; border-radius: 20px; align-self: flex-start; border-bottom-left-radius: 6px; animation: popIn 0.3s ease-out forwards; display: none;}
+        .typing-indicator.visible { display: flex; }
+        .dot { width: 10px; height: 10px; background: #9ca3af; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        /* 9. Would You Rather */
+        .wyr-container { display: flex; gap: 20px; width: 100%; max-width: 900px; margin: 0 auto;}
+        .wyr-card { flex: 1; border-radius: 20px; background: rgba(0,0,0,0.4); border: 2px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.4s; padding: 40px 20px; text-align: center;}
+        .wyr-card i { font-size: 5rem; margin-bottom: 25px; color: var(--text-dim); transition: 0.3s;}
+        .wyr-card p { font-family: var(--font-display); font-size: 1.5rem; color: #fff; line-height: 1.4; margin: 0;}
+        .wyr-card:hover { transform: scale(1.02); border-color: var(--brand-main); background: rgba(16, 185, 129, 0.05); }
+        .wyr-card:hover i { color: var(--brand-main); }
+        .wyr-card.selected { background: var(--brand-main); transform: scale(1.05); border-color: var(--brand-main); box-shadow: 0 15px 40px var(--accent-glow); pointer-events: none;}
+        .wyr-card.selected i, .wyr-card.selected p { color: #000; }
+        .wyr-container.locked .wyr-card:not(.selected) { opacity: 0.3; filter: grayscale(100%); pointer-events: none; transform: scale(0.95); }
+
+        /* 10. Agree/Disagree */
+        .agree-container { display: flex; gap: 15px; width: 100%; max-width: 800px; margin: 0 auto; justify-content: center;}
+        .agree-btn { padding: 25px; font-weight: 800; font-size: 1.3rem; font-family: var(--font-display); border-radius: 16px; border: 2px solid; background: rgba(0,0,0,0.6); transition: 0.3s; flex: 1; cursor: pointer; color: #fff;}
+        .agree-btn.disagree { border-color: #ef4444; }
+        .agree-btn.neutral { border-color: #f59e0b; }
+        .agree-btn.agree { border-color: #10b981; }
+        .agree-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .agree-btn:hover.disagree { background: #ef4444; color:#fff;}
+        .agree-btn:hover.neutral { background: #f59e0b; color:#fff;}
+        .agree-btn:hover.agree { background: #10b981; color:#000;}
+        .agree-btn.selected.disagree { background: #ef4444; color: #fff; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.5); transform: scale(1.05);}
+        .agree-btn.selected.neutral { background: #f59e0b; color: #fff; box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5); transform: scale(1.05);}
+        .agree-btn.selected.agree { background: #10b981; color: #000; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5); transform: scale(1.05);}
+        .agree-container.locked .agree-btn:not(.selected) { opacity: 0.3; pointer-events: none; filter: grayscale(100%);}
+
+        /* 11. Topic Cards */
+        .topic-grid { display: flex; gap: 20px; justify-content: center; perspective: 1000px; margin-bottom: 30px; flex-wrap: wrap;}
+        .t-card { width: 220px; height: 300px; position: relative; cursor: pointer; transform-style: preserve-3d; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .t-card.flipped { transform: rotateY(180deg) scale(1.05); z-index: 10; pointer-events: none;}
+        .t-front, .t-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 24px; display: flex; align-items: center; justify-content: center; padding: 25px; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.5);}
+        .t-front { background: linear-gradient(135deg, var(--brand-main), #059669); color: #fff; font-size: 5rem; border: 4px solid rgba(255,255,255,0.2); }
+        .t-front::after { content: '?'; position: absolute; font-family: var(--font-display); font-weight: 900; opacity: 0.8;}
+        .t-front:hover { filter: brightness(1.1); transform: translateY(-5px); box-shadow: 0 20px 40px var(--accent-glow);}
+        .t-back { background: #fff; color: #0f172a; transform: rotateY(180deg); font-size: 1.4rem; font-weight: 800; border: 4px solid var(--brand-main); flex-direction: column; gap: 15px;}
+
+        /* Quick Thinker (Name 3) */
+        .n3-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px dashed rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: rgba(255,255,255,0.3); cursor: pointer; transition: 0.3s; background: rgba(0,0,0,0.4); font-family: var(--font-display); font-weight: 900;}
+        .n3-circle.filled { background: var(--brand-main); border-color: var(--brand-main); border-style: solid; color: #000; transform: scale(1.1); box-shadow: 0 0 20px var(--accent-glow); }
+
+        /* The Arena Cards */
+        .arena-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; perspective: 1000px; margin-top: 30px; width: 100%; max-width: 400px; margin-inline: auto;}
+        .arena-card { background: transparent; min-height: 260px; cursor: pointer; width: 100%; display: block; }
+        .arena-card-inner { position: relative; width: 100%; height: 100%; min-height: 260px; text-align: center; transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-style: preserve-3d; }
+        .arena-card.flipped .arena-card-inner { transform: rotateY(180deg); }
+        .arena-card-front, .arena-card-back { position: absolute; top: 0; left: 0; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); box-sizing: border-box; }
+        .arena-card-front { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); }
+        .arena-card-front i { font-size: 3.5rem; color: var(--brand-main); margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.5));}
+        .arena-card-front h3 { font-family: var(--font-display); font-size: 1.5rem; color: #fff; letter-spacing: 2px; margin: 0;}
+        .arena-card-back { background: var(--brand-main); color: #020617; transform: rotateY(180deg); box-shadow: 0 15px 40px var(--accent-glow); padding: 20px; }
+        .arena-card-back p { color: #020617; font-size: 1.15rem; font-weight: 700; margin: 0; line-height: 1.6; }
+
+        /* FOOTER */
+        .footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 85px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); display: flex; justify-content: space-between; align-items: center; padding: 0 5%; z-index: 150; border-top: 1px solid rgba(255,255,255,0.05); transition: 0.4s; }
+        .footer.hidden-mode { transform: translateY(100px); }
+        .nav-btn { background: transparent; border: none; color: #94a3b8; padding: 12px 25px; font-weight: 800; cursor: pointer; transition: 0.3s; font-family: var(--font-code); display: flex; align-items: center; gap: 10px; }
+        .nav-btn:hover:not(:disabled) { color: #fff; }
+        .nav-btn.next { background: #fff; color: #000; border-radius: 12px; padding: 15px 40px; box-shadow: 0 5px 15px rgba(255,255,255,0.1); }
+        .nav-btn.next:hover { background: var(--brand-main); box-shadow: 0 5px 25px var(--accent-glow); }
+        .progress-bar { position: fixed; bottom: 85px; left: 0; height: 5px; background: var(--brand-main); transition: 0.4s; z-index: 151; box-shadow: 0 0 10px var(--brand-main);}
+        .progress-bar.hidden-mode { display: none; }
+
+        /* TEACHER HUD & SMART DICT */
+        .sidebar-panel { position: fixed; top: 0; right: -600px; width: 500px; height: 100vh; background: #0f172a; z-index: 250; padding: 100px 50px 50px; transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); border-left: 1px solid var(--glass-border); box-shadow: -30px 0 60px rgba(0,0,0,0.8); }
+        .sidebar-panel.open { right: 0; }
+        .sidebar-close { position: absolute; top: 30px; left: 30px; background: rgba(255,255,255,0.05); border: none; color: #fff; width: 50px; height: 50px; border-radius: 15px; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;}
+        .sidebar-close:hover { background: var(--incorrect); }
+
+        .teacher-hud { position: fixed; top: 0; left: -500px; width: 450px; height: 100vh; background: #0f172a; z-index: 250; padding: 100px 50px 50px; transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); border-right: 1px solid var(--glass-border); box-shadow: 30px 0 60px rgba(0,0,0,0.8); overflow-y: auto; }
+        .teacher-hud.open { left: 0; }
+        .hud-btn { width: 100%; padding: 15px; background: #1e293b; border: 1px solid var(--glass-border); color: #fff; border-radius: 12px; margin-bottom: 15px; cursor: pointer; font-family: var(--font-body); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; transition: 0.2s;}
+        .hud-btn:hover { background: var(--accent); border-color: var(--accent); color: #000; }
+        .hud-timer { font-family: var(--font-code); font-size: 3.5rem; color: var(--brand-main); text-align: center; margin-bottom: 20px; font-weight: 900;}
+
+        .dict-word { font-family: var(--font-display); font-size: 3.5rem; color: var(--brand-main); margin-bottom: 5px; text-transform: uppercase; }
+        .dict-phonetic { font-family: var(--font-code); color: var(--accent); font-size: 1.2rem; margin-bottom: 25px; display: block; }
+        .dict-def { font-size: 1.4rem; color: #fff; line-height: 1.6; border-left: 4px solid var(--brand-main); padding-left: 20px; }
+        #d-video-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 20px; display: none; position: relative;}
+        #d-video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        .hl { color: var(--brand-main); font-weight: 800; border-bottom: 2px dashed var(--brand-main); cursor: help; padding: 0 4px; transition: 0.2s;}
+        .hl:hover { background: rgba(16, 185, 129, 0.15); border-bottom-style: solid; border-radius: 4px;}
+
+        /* ALERTS */
+        .alert-overlay { position: fixed; inset: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; transition: 0.3s; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);}
+        .alert-text { font-family: var(--font-display); font-size: 6rem; text-transform: uppercase; font-weight: 900; text-shadow: 0 10px 40px rgba(0,0,0,0.8); transform: scale(0.5); transition: 0.5s; text-align: center; line-height: 1;}
+        .alert-overlay.show { opacity: 1; }
+        .alert-overlay.show .alert-text { transform: scale(1); }
+        .alert-praise { color: var(--correct); filter: drop-shadow(0 0 30px var(--correct)); }
+        .alert-cue { color: var(--accent); filter: drop-shadow(0 0 30px var(--accent)); }
+
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+    </style>
+</head>
+<body>
+
+    <div class="correction-overlay"></div>
+    <div class="ambient-orbs"><div class="bg-image"></div><div class="bg-overlay"></div><div class="orb orb-1"></div><div class="orb orb-2"></div></div>
+    <div class="alert-overlay" id="alert-screen"><div class="alert-text" id="alert-msg">GREAT JOB!</div></div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-basket-shopping"></i> WOLF LABS <span>FRESH MARKET</span></div>
+        <div class="nav-controls">
+            <button class="teacher-tool" onclick="window.showHub('teacher-hud')" title="Teacher HUD"><i class="fa-solid fa-toolbox"></i></button>
+            <div style="width: 1px; height: 25px; background: rgba(255,255,255,0.1); margin: 0 5px;"></div>
+            <button class="teacher-tool" onclick="window.toggleFullscreen()" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
+        </div>
+    </nav>
+
+    <!-- TEACHER HUD -->
+    <div class="teacher-hud" id="teacher-hud">
+        <button class="sidebar-close" style="left: auto; right: 30px;" onclick="document.getElementById('teacher-hud').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+        <p style="font-family: var(--font-code); color: var(--brand-main); font-size: 0.8rem; margin-bottom: 20px; letter-spacing: 2px;">// TEACHER TOOL SET</p>
+        <div class="hud-timer" id="hud-timer">00:60</div>
+        <button class="hud-btn" onclick="startTimer()"><i class="fa-solid fa-play"></i> Start 60s Timer</button>
+        <button class="hud-btn warning" onclick="toggleCorrectionMode()" style="background: rgba(239, 68, 68, 0.1); border-color: var(--incorrect); color: var(--incorrect);"><i class="fa-solid fa-hand-paper"></i> Correction Mode</button>
+        <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 25px;">
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 15px; font-weight: 700; font-family: var(--font-code);">STUDENT POINTS</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #000; padding: 15px 25px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <span style="color: var(--brand-main); font-size: 2rem; font-weight: 900;" id="hud-stars">⭐ 0</span>
+                <button class="hud-btn" style="width: auto; margin: 0; padding: 10px 20px;" onclick="awardStar()">+1</button>
+            </div>
+        </div>
+        <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 25px;">
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 15px; font-weight: 700; font-family: var(--font-code);">LIVE CUES</p>
+            <button class="hud-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--accent); color: var(--accent);" onclick="showAlert('SPEAK<br>SLOWER 🐢', 'cue')"><i class="fa-solid fa-turtle"></i> Speak Slower</button>
+            <button class="hud-btn" style="background: rgba(245, 158, 11, 0.1); border-color: var(--accent); color: var(--accent);" onclick="showAlert('LOUDER<br>PLEASE 🔊', 'cue')"><i class="fa-solid fa-volume-high"></i> Speak Louder</button>
+        </div>
+        <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 25px;">
+            <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 15px; font-weight: 700; font-family: var(--font-code);">PRAISE GENERATOR</p>
+            <button class="hud-btn" onclick="showAlert('PERFECT<br>PRONUNCIATION!', 'praise')"><i class="fa-solid fa-comment-dots"></i> Perfect Pronunciation</button>
+            <button class="hud-btn" onclick="showAlert('AMAZING<br>VOCABULARY!', 'praise')"><i class="fa-solid fa-spell-check"></i> Amazing Vocab</button>
+        </div>
+    </div>
+
+    <!-- SMART DICT (WITH VIDEO) -->
+    <div class="sidebar-panel" id="dict-panel">
+        <button class="sidebar-close" onclick="closeDict()"><i class="fa-solid fa-xmark"></i></button>
+        <p style="font-family: var(--font-code); color: var(--brand-main); font-size: 0.8rem; margin-bottom: 20px; letter-spacing: 2px;">// SMART DICTIONARY</p>
+        <h1 id="d-word" class="dict-word">Word</h1>
+        <span id="d-phonetic" class="dict-phonetic">/phonetic/</span>
+        <div class="dict-def" id="d-def">Definition here.</div>
+        <div id="d-video-wrapper"><iframe id="d-video" src="" allow="autoplay; fullscreen"></iframe></div>
+        <div style="margin-top: 30px; padding: 25px; background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
+            <p style="font-size: 0.9rem; color: var(--brand-main); font-weight: 800; text-transform: uppercase;">Context:</p>
+            <p id="d-ex" style="font-style: italic; margin-top: 10px; font-size: 1.1rem; color: #cbd5e1;"></p>
+        </div>
+    </div>
+
+    <main class="main-container" id="slides-container">
+
+        <!-- 1. ADMIN -->
+        <div class="slide active">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-user-shield"></i> ADMIN PROTOCOL</h2>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--brand-main); padding: 30px; border-radius: 20px; text-align: left; width: 100%; max-width: 800px;">
+                    <p style="text-align: left; margin-bottom: 12px; font-size: 1.2rem;"><strong>LEVEL:</strong> A1 / A2</p>
+                    <p style="text-align: left; margin-bottom: 12px; font-size: 1.2rem;"><strong>TOPIC:</strong> Grocery Shopping in English</p>
+                    <p style="text-align: left; margin-bottom: 12px; font-size: 1.2rem;"><strong>GRAMMAR FOCUS:</strong> Much vs. Many (Quantifiers).</p>
+                    <p style="text-align: left; font-size: 1.2rem; color: var(--brand-main); margin-bottom: 0;"><strong>LESSON FLOW:</strong> 25 Immersive Pages. From Visual Input ➔ Grammar ➔ Speaking Challenges ➔ Double Roleplay.</p>
+                </div>
+                <div style="margin-top: 30px; background: rgba(0,0,0,0.4); padding: 25px; border-radius: 15px; border-left: 4px solid var(--brand-main); text-align: left; width: 100%; max-width: 800px;">
+                    <p style="color: var(--text-dim); font-family: var(--font-code); font-size: 1.1rem; line-height: 1.6; margin: 0;">
+                        <span style="color: var(--brand-main); font-weight: 800;">// PRO TIPS FOR TEACHERS:</span><br><br>
+                        The lesson has been extended with advanced conversation activities at the end. Use the <strong>Teacher HUD</strong> tool in the top menu to send stars (Points) and manage the student's speaking flow.
+                    </p>
+                </div>
+                <button class="btn-start" style="margin-top: 30px;" onclick="window.nextSlide()">INITIALIZE LESSON</button>
+            </div>
+        </div>
+
+        <!-- 2. COVER -->
+        <div class="slide">
+            <div class="glass-panel" style="text-align: center; border: none; background: transparent; box-shadow: none;">
+                <div style="font-size: 8rem; color: var(--brand-main); filter: drop-shadow(0 0 30px var(--accent-glow)); animation: pulse 3s infinite; margin-bottom: 20px;">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                </div>
+                <h1 style="font-size: 5.5rem; letter-spacing: -1px; text-transform: uppercase; margin-bottom: 10px; text-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+                    GROCERY<br><span style="color: var(--brand-main);">SHOPPING</span>
+                </h1>
+                <p style="font-size: 1.5rem; letter-spacing: 5px; color: var(--accent); font-weight: 800; margin-bottom: 40px;">A1/A2 MASTERCLASS</p>
+                <div style="margin-bottom: 30px;">
+                    <input type="text" id="s-name" class="input-name" placeholder="Type your name..." onkeypress="if(event.key==='Enter') window.saveName()">
+                </div>
+                <button class="btn-start" style="font-size: 1.5rem; padding: 25px 60px;" onclick="window.saveName()">START MISSION <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i></button>
+            </div>
+        </div>
+
+        <!-- 3. ICEBREAKER -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-fire"></i> ICEBREAKER</h2>
+                <p style="font-size: 1.8rem;">Hi <span class="dyn-name">Student</span>! Do you like going to the supermarket?</p>
+                <div class="ww-grid">
+                    <button class="btn-start" style="background: rgba(0,0,0,0.6); border: 1px solid var(--accent); color: #fff;" onclick="document.getElementById('hub-ice').style.display='block'">YES, I LIKE IT</button>
+                    <button class="btn-start" style="background: rgba(0,0,0,0.6); border: 1px solid var(--brand-main); color: #fff;" onclick="document.getElementById('hub-ice').style.display='block'">NO, IT'S BORING</button>
+                </div>
+                <div class="speaking-hub" id="hub-ice">
+                    <p><strong>TEACHER:</strong> Ask "Why?" and "Who usually does the shopping in your house?"</p>
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase">"I like it because I can choose my food..."</span>
+                        <span class="starter-phrase">"In my house, my mom/dad usually goes to the supermarket."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. VOCAB 1: OPEN THE BOX -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-box-open"></i> KEY VOCABULARY</h2>
+                <p>Click the boxes to reveal the shopping words.</p>
+                <div class="ww-grid">
+                    <div class="ww-box" onclick="window.openBox(this, 'Shopping cart', 'A basket on wheels used for carrying purchases.', 'We are getting a shopping cart.')">
+                        <i class="fa-solid fa-cart-shopping"></i><span style="font-family: var(--font-code); color: var(--text-dim); font-size: 1.2rem;">1</span>
+                    </div>
+                    <div class="ww-box" onclick="window.openBox(this, 'Produce section', 'The area in a store where fresh fruits and vegetables are kept.', 'There are more fruits here in the produce section.')">
+                        <i class="fa-solid fa-apple-whole"></i><span style="font-family: var(--font-code); color: var(--text-dim); font-size: 1.2rem;">2</span>
+                    </div>
+                    <div class="ww-box" onclick="window.openBox(this, 'Weigh', 'To find out how heavy something is.', 'You got to weigh the bananas.')">
+                        <i class="fa-solid fa-scale-unbalanced"></i><span style="font-family: var(--font-code); color: var(--text-dim); font-size: 1.2rem;">3</span>
+                    </div>
+                </div>
+                <button class="btn-start" style="margin-top: 30px; display: none;" id="btn-v1" onclick="window.nextSlide()">PROCEED</button>
+            </div>
+        </div>
+
+        <!-- 5. VIDEO CHUNK 1 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-brands fa-youtube"></i> AT THE SUPERMARKET</h2>
+                <p>Watch from 0:00 to 3:00. What fruit are they looking at?</p>
+                <div class="video-wrapper">
+                    <iframe data-src="https://www.youtube-nocookie.com/embed/u3883nez48w?start=0&end=180&rel=0&modestbranding=1" allowfullscreen></iframe>
+                </div>
+                <button class="btn-start" onclick="window.nextSlide()">I FINISHED WATCHING</button>
+            </div>
+        </div>
+
+        <!-- 6. NEW: GRAMMAR SANDBOX -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-sliders"></i> GRAMMAR SANDBOX</h2>
+                <p style="font-size: 1.6rem; margin-bottom: 40px;">How do we ask about quantities?</p>
+                <div class="grammar-switch">
+                    <button class="switch-btn active" onclick="window.switchGrammar(this, 'How MANY apples do you need?', 'COUNTABLE (Apples, Bananas, Eggs - 1, 2, 3...)', 'sandbox-sentence-1', 'sandbox-rule-1')">MANY</button>
+                    <button class="switch-btn" onclick="window.switchGrammar(this, 'We do not need that MUCH stuff.', 'UNCOUNTABLE (Water, Milk, Time, Stuff)', 'sandbox-sentence-1', 'sandbox-rule-1')">MUCH</button>
+                </div>
+                <div class="sandbox-display">
+                    <div id="sandbox-rule-1" style="color: var(--brand-main); font-size: 1.2rem; letter-spacing: 2px; font-weight: 800; font-family: var(--font-code); margin-bottom: 10px;">COUNTABLE (Apples, Bananas, Eggs - 1, 2, 3...)</div>
+                    <span id="sandbox-sentence-1" style="color: #fff; font-size: 3rem; font-weight: 700; line-height: 1.4;">How <span style="color:var(--brand-main);">MANY</span> apples do you need?</span>
+                </div>
+                <button class="btn-start" style="margin-top: 30px;" onclick="window.nextSlide()">I UNDERSTAND</button>
+            </div>
+        </div>
+
+        <!-- 7. THE WEIGHING SCALE -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-scale-balanced"></i> THE WEIGHING SCALE</h2>
+                <p>Much or Many? Click the correct scale button to sort the grocery items!</p>
+                
+                <div class="scale-container">
+                    <div class="scale-display" id="scale-display">APPLES</div>
+                    <div class="scale-controls">
+                        <button class="scale-btn" onclick="window.weighItem('MUCH')">MUCH <span style="display:block; font-size: 1rem; font-weight: 400; font-family: var(--font-body);">(Uncountable)</span></button>
+                        <button class="scale-btn" onclick="window.weighItem('MANY')">MANY <span style="display:block; font-size: 1rem; font-weight: 400; font-family: var(--font-body);">(Countable)</span></button>
+                    </div>
+                    <div class="scale-baskets">
+                        <div class="basket" id="basket-much" data-label="MUCH"></div>
+                        <div class="basket" id="basket-many" data-label="MANY"></div>
+                    </div>
+                </div>
+
+                <div class="speaking-hub" id="hub-scale">
+                    <p><strong>TEACHER:</strong> "Excellent sorting! Ready to build a sentence?"</p>
+                    <button class="btn-start" style="margin-top: 15px;" onclick="window.nextSlide()">NEXT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. CHECKOUT BELT -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-money-check-dollar"></i> CHECKOUT BELT</h2>
+                <p>Click the groceries on the belt in the correct order to bag them!</p>
+                
+                <div class="conveyor-container">
+                    <div class="grocery-bag" id="grocery-bag"></div>
+                    <div class="conveyor-belt" id="conveyor-belt">
+                        <div class="grocery-item" onclick="window.bagItem(this)">stuff.</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">that</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">We</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">much</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">not</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">need</div>
+                        <div class="grocery-item" onclick="window.bagItem(this)">do</div>
+                    </div>
+                </div>
+
+                <div class="speaking-hub" id="hub-syntax">
+                    <p><strong>TEACHER:</strong> "Perfect sentence: We do not need that much stuff."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. THE RECEIPT -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-receipt"></i> THE RECEIPT CHECK</h2>
+                <p>Click the items on the receipt. Are they TRUE or FALSE according to the video?</p>
+                
+                <div class="receipt-container">
+                    <div class="receipt-paper">
+                        <div class="receipt-header">
+                            <h3>WOLF MARKET</h3>
+                            <p>Customer Receipt</p>
+                        </div>
+                        
+                        <div class="receipt-item" onclick="this.classList.add('active')">
+                            <span class="receipt-text">1. They decide to buy powder detergent.</span>
+                            <div class="receipt-action">
+                                <button class="stamp-btn t-btn" onclick="window.stampReceipt(this, false, 'stamp-1')">TRUE</button>
+                                <button class="stamp-btn f-btn" onclick="window.stampReceipt(this, true, 'stamp-1')">FALSE</button>
+                            </div>
+                            <div class="stamp-mark stamp-false" id="stamp-1">FALSE</div>
+                        </div>
+                        
+                        <div class="receipt-item" onclick="this.classList.add('active')">
+                            <span class="receipt-text">2. The bananas cost 100 dollars.</span>
+                            <div class="receipt-action">
+                                <button class="stamp-btn t-btn" onclick="window.stampReceipt(this, false, 'stamp-2')">TRUE</button>
+                                <button class="stamp-btn f-btn" onclick="window.stampReceipt(this, true, 'stamp-2')">FALSE</button>
+                            </div>
+                            <div class="stamp-mark stamp-false" id="stamp-2">FALSE</div>
+                        </div>
+
+                        <div class="receipt-item" onclick="this.classList.add('active')">
+                            <span class="receipt-text">3. They buy a shopping cart.</span>
+                            <div class="receipt-action">
+                                <button class="stamp-btn t-btn" onclick="window.stampReceipt(this, false, 'stamp-3')">TRUE</button>
+                                <button class="stamp-btn f-btn" onclick="window.stampReceipt(this, true, 'stamp-3')">FALSE</button>
+                            </div>
+                            <div class="stamp-mark stamp-false" id="stamp-3">FALSE</div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center; border-top: 1px solid #94a3b8; padding-top: 10px;">
+                            <p style="font-size: 1rem; color: #475569; margin: 0;">THANK YOU FOR SHOPPING</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. VOCAB 2: SURGICAL VIDEO DICT -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-tags"></i> SUPERMARKET AISLES</h2>
+                <p>Click an item on the shelf to see the exact moment it appears in the video!</p>
+                
+                <div class="ww-grid" style="gap: 25px; margin-top: 30px; max-width: 800px;">
+                    <div class="ww-box" onclick="window.openBox(this, 'Eggs')">
+                        <i class="fa-solid fa-egg" style="font-size: 4rem;"></i>
+                        <span style="font-family: var(--font-code); font-weight: 700; margin-top: 10px; color: #fff;">EGGS</span>
+                    </div>
+                    <div class="ww-box" onclick="window.openBox(this, 'Water')">
+                        <i class="fa-solid fa-bottle-water" style="font-size: 4rem;"></i>
+                        <span style="font-family: var(--font-code); font-weight: 700; margin-top: 10px; color: #fff;">WATER</span>
+                    </div>
+                    <div class="ww-box" onclick="window.openBox(this, 'Soda')">
+                        <i class="fa-solid fa-wine-bottle" style="font-size: 4rem;"></i>
+                        <span style="font-family: var(--font-code); font-weight: 700; margin-top: 10px; color: #fff;">SODA</span>
+                    </div>
+                    <div class="ww-box" onclick="window.openBox(this, 'Detergent')">
+                        <i class="fa-solid fa-jug-detergent" style="font-size: 4rem;"></i>
+                        <span style="font-family: var(--font-code); font-weight: 700; margin-top: 10px; color: #fff;">DETERGENT</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; color: var(--text-dim); font-size: 1.1rem; font-style: italic;">(The Smart Dict will open and play the exact scene for each item).</div>
+                <button class="btn-start" style="margin-top: 30px;" onclick="window.nextSlide()">NEXT STEP</button>
+            </div>
+        </div>
+
+        <!-- 11. VIDEO CHUNK 2: WEIGHING AND BUYING -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-brands fa-youtube"></i> CONTINUING THE LIST</h2>
+                <p>Watch from 3:45 to 8:00. What do they buy?</p>
+                <div class="video-wrapper">
+                    <iframe data-src="https://www.youtube-nocookie.com/embed/u3883nez48w?start=225&end=480&rel=0&modestbranding=1" allowfullscreen></iframe>
+                </div>
+                <button class="btn-start" onclick="window.nextSlide()">I FINISHED WATCHING</button>
+            </div>
+        </div>
+
+        <!-- 12. NEW SCENARIO: AISLE NAVIGATOR -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-map-location-dot"></i> AISLE NAVIGATOR</h2>
+                <p>Where should you go in the supermarket to buy <strong style="color:var(--brand-main);">Milk and Cheese</strong>?</p>
+                
+                <div class="aisle-grid">
+                    <div class="aisle-sign" data-number="1" onclick="window.checkAisle(this, false)">
+                        <i class="fa-solid fa-apple-whole"></i>
+                        <span>PRODUCE</span>
+                    </div>
+                    <div class="aisle-sign" data-number="2" onclick="window.checkAisle(this, true)">
+                        <i class="fa-solid fa-cow"></i>
+                        <span>DAIRY</span>
+                    </div>
+                    <div class="aisle-sign" data-number="3" onclick="window.checkAisle(this, false)">
+                        <i class="fa-solid fa-bottle-water"></i>
+                        <span>DRINKS</span>
+                    </div>
+                    <div class="aisle-sign" data-number="4" onclick="window.checkAisle(this, false)">
+                        <i class="fa-solid fa-jug-detergent"></i>
+                        <span>HOUSEHOLD</span>
+                    </div>
+                </div>
+
+                <div class="speaking-hub" id="hub-aisle">
+                    <p><strong>TEACHER:</strong> "Exactly! You go to the Dairy aisle. Where do you find soap?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. INTERACTIVE SHOPPING LIST -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-basket-shopping"></i> FILL THE CART</h2>
+                <p>Read the shopping list. Tap the correct items from the shelves!</p>
+                
+                <div class="cart-container">
+                    <div class="shopping-list">
+                        <h3>Our List:</h3>
+                        <div class="list-item" id="li-bananas"><i class="fa-regular fa-square"></i> Bananas</div>
+                        <div class="list-item" id="li-eggs"><i class="fa-regular fa-square"></i> Eggs</div>
+                        <div class="list-item" id="li-water"><i class="fa-regular fa-square"></i> Water</div>
+                        <div class="list-item" id="li-detergent"><i class="fa-regular fa-square"></i> Detergent</div>
+                    </div>
+                    
+                    <div class="shelves">
+                        <div class="shelf-item" onclick="window.addToCart(this, false)">
+                            <i class="fa-solid fa-shoe-prints"></i><br>Shoes
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, true, 'li-water')">
+                            <i class="fa-solid fa-bottle-water"></i><br>Water
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, false)">
+                            <i class="fa-solid fa-laptop"></i><br>Laptop
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, true, 'li-eggs')">
+                            <i class="fa-solid fa-egg"></i><br>Eggs
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, false)">
+                            <i class="fa-solid fa-pizza-slice"></i><br>Pizza
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, true, 'li-bananas')">
+                            <i class="fa-solid fa-lemon"></i><br>Bananas
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, true, 'li-detergent')">
+                            <i class="fa-solid fa-jug-detergent"></i><br>Detergent
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, false)">
+                            <i class="fa-solid fa-book"></i><br>Books
+                        </div>
+                        <div class="shelf-item" onclick="window.addToCart(this, false)">
+                            <i class="fa-solid fa-baseball"></i><br>Baseball
+                        </div>
+                    </div>
+                </div>
+
+                <div class="speaking-hub" id="hub-cart">
+                    <p><strong>TEACHER:</strong> "Awesome! You got everything. Who usually writes the grocery list in your family?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. TEXTING SCENARIO -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-brands fa-whatsapp"></i> THE MISSING ITEM</h2>
+                <p>Reply to your family member!</p>
+                <div class="phone-ui">
+                    <div class="phone-notch"></div>
+                    <div class="phone-top-bar"><i class="fa-solid fa-house-user" style="color:var(--brand-main); margin-right:8px;"></i> Roommate</div>
+                    <div class="phone-chat-area">
+                        <div class="phone-msg received">Hey! Are you at the store? We don't have any eggs left.</div>
+                        <div class="typing-indicator" id="typing-dot-1">
+                            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        </div>
+                    </div>
+                    <div class="phone-options-area" id="chat-opts-1">
+                        <button class="phone-opt-btn" onclick="window.advanceChat(this, true, 'chat-opts-1', 'typing-dot-1')">Okay, I will buy some eggs.</button>
+                        <button class="phone-opt-btn" onclick="window.advanceChat(this, false, 'chat-opts-1', 'typing-dot-1')">I buy many egg.</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15. VIDEO CHUNK 3: HEADING HOME -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-brands fa-youtube"></i> HEADING HOME</h2>
+                <p>Watch from 8:00 to 11:30. What kind of bags did they use?</p>
+                <div class="video-wrapper">
+                    <iframe data-src="https://www.youtube-nocookie.com/embed/u3883nez48w?start=480&end=690&rel=0&modestbranding=1" allowfullscreen></iframe>
+                </div>
+                <button class="btn-start" onclick="window.nextSlide()">I FINISHED WATCHING</button>
+            </div>
+        </div>
+
+        <!-- 16. MEMORY MATCH -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-puzzle-piece"></i> MEMORY MATCH</h2>
+                <p>Find the matching pairs! (Word + Emoji)</p>
+                <div class="memory-grid" id="memory-grid">
+                    <!-- Generated via JS -->
+                </div>
+                <div class="speaking-hub" id="p_memory" style="display:none; width: 100%;">
+                    <p><strong>TEACHER:</strong> "Great memory! Which of these items is your favorite?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17. PICTURE REVEAL -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-image"></i> PICTURE REVEAL</h2>
+                <p>Click the tiles to reveal the picture. Name the items in the cart!</p>
+                <div class="reveal-area">
+                    <div class="reveal-grid" id="reveal-grid">
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">1</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">2</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">3</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">4</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">5</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">6</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">7</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">8</div>
+                        <div class="reveal-tile" onclick="window.removeTile(this)" style="pointer-events: auto;">9</div>
+                    </div>
+                </div>
+                <div class="speaking-hub" id="p_reveal" style="display:none; width: 100%;">
+                    <p><strong>TEACHER:</strong> "Describe the cart! I see some vegetables, maybe some bread..."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 18. ENHANCED CONVERSATION CARDS -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-clone"></i> PICK A CARD</h2>
+                <p>Pick a card to start a deep discussion.</p>
+                <div class="topic-grid">
+                    <div class="t-card" onclick="window.flipCard(this, 'Do you always use a shopping list? Why?', 'Yes, I use a list because...')">
+                        <div class="t-front"></div>
+                        <div class="t-back"></div>
+                    </div>
+                    <div class="t-card" onclick="window.flipCard(this, 'Do you prefer big supermarkets or local markets?', 'I prefer... because...')">
+                        <div class="t-front"></div>
+                        <div class="t-back"></div>
+                    </div>
+                    <div class="t-card" onclick="window.flipCard(this, 'Do you buy junk food at the supermarket?', 'Yes, sometimes I buy...')">
+                        <div class="t-front"></div>
+                        <div class="t-back"></div>
+                    </div>
+                </div>
+                <div class="speaking-hub" id="hub-cards" style="display:none; margin-top: 30px;">
+                    <p><strong>TEACHER:</strong> Let the student express their ideas.</p>
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase" id="cards-starter">"..."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 19. FLUENCY BOOSTER: WOULD YOU RATHER -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-code-branch"></i> WOULD YOU RATHER?</h2>
+                <p>Choose your preferred way to shop.</p>
+                <div class="wyr-container">
+                    <div class="wyr-card" onclick="window.selectWyr(this)">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <p style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin:0;">Buy groceries online using an app.</p>
+                    </div>
+                    <div class="wyr-card" onclick="window.selectWyr(this)">
+                        <i class="fa-solid fa-store"></i>
+                        <p style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; margin:0;">Go to the supermarket in person.</p>
+                    </div>
+                </div>
+                <div class="speaking-hub" id="hub-wyr">
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase">"I prefer to... because it is easier/faster."</span>
+                        <span class="starter-phrase">"I like to go in person to see the fresh food."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20. FLUENCY BOOSTER: AGREE OR DISAGREE -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-balance-scale"></i> STAND YOUR GROUND</h2>
+                <p>What is your opinion on this statement?</p>
+                <div style="background: rgba(0,0,0,0.6); padding: 50px; border-radius: 20px; font-size: 2.5rem; font-weight: 900; margin-bottom: 30px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); text-align: center; border: 1px dashed var(--glass-border);">
+                    "Buying fresh food at the market is better than the supermarket."
+                </div>
+                <div class="agree-container" id="agree-box">
+                    <button class="agree-btn disagree" onclick="window.selectAgree(this)">DISAGREE</button>
+                    <button class="agree-btn neutral" onclick="window.selectAgree(this)">NEUTRAL</button>
+                    <button class="agree-btn agree" onclick="window.selectAgree(this)">AGREE</button>
+                </div>
+                <div class="speaking-hub" id="hub-agree">
+                    <p><strong>TEACHER:</strong> Challenge the student: "Why do you think that?"</p>
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase">"I agree because it is fresher and cheaper."</span>
+                        <span class="starter-phrase">"I disagree because the supermarket has everything."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21. QUICK THINKER (NAME 3) -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-bolt"></i> QUICK THINKER</h2>
+                <p>Name 3 items in the category...</p>
+                
+                <div style="height: 120px; background: rgba(0,0,0,0.5); border: 3px solid var(--brand-main); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 30px; width: 100%; max-width: 600px; margin: 0 auto 30px;">
+                    <div id="room-display" style="font-family: var(--font-display); font-size: 2.8rem; font-weight: 900; color: var(--brand-main); transition: 0.1s;">SPIN THE WHEEL</div>
+                </div>
+                <button class="btn-start" onclick="window.spinRoom(this)">RANDOMIZE <i class="fa-solid fa-dice"></i></button>
+
+                <div id="n3-checks-container" style="display: none; gap: 30px; justify-content: center; margin-top: 40px; animation: popIn 0.5s ease;">
+                    <div class="n3-circle" onclick="window.checkN3(this)">1</div>
+                    <div class="n3-circle" onclick="window.checkN3(this)">2</div>
+                    <div class="n3-circle" onclick="window.checkN3(this)">3</div>
+                </div>
+
+                <div class="speaking-hub" id="hub-n3">
+                    <p><strong>TEACHER:</strong> Click the circles above as the student names 3 valid items!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 22. ARENA 1: ROLEPLAY -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-cash-register"></i> THE ARENA 1: CHECKOUT</h2>
+                <p>Click the card to reveal your mission!</p>
+                <div style="perspective: 1000px; margin-top: 30px; width: 100%; max-width: 350px;">
+                    <div class="t-card" style="width: 100%; height: 350px;" onclick="this.classList.toggle('flipped'); document.getElementById('hub-arena1').style.display='block';">
+                        <div class="t-front" style="background: rgba(0,0,0,0.5); font-size: 2rem; border-color: var(--brand-main); flex-direction: column;">
+                            <i class="fa-solid fa-basket-shopping" style="font-size: 5rem; margin-bottom: 20px; color: var(--brand-main);"></i>
+                            <span style="font-size: 1.5rem; color: #fff;">THE CUSTOMER</span>
+                        </div>
+                        <div class="t-back" style="font-size: 1.3rem; padding: 30px; line-height: 1.5; color: #fff; justify-content: center; background: var(--brand-main);">
+                            You are at the checkout in the supermarket. The teacher is the cashier. Ask for some bags!
+                        </div>
+                    </div>
+                </div>
+                <div class="speaking-hub" id="hub-arena1">
+                    <p><strong>TEACHER:</strong> Act as the cashier. Say "Hello! Do you need any bags today?"</p>
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase">"Hi! Yes, I need some bags, please."</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 23. ARENA 2: ROLEPLAY -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-users-viewfinder"></i> THE ARENA 2: LOST</h2>
+                <p>Click the card to reveal your next mission!</p>
+                <div style="perspective: 1000px; margin-top: 30px; width: 100%; max-width: 350px;">
+                    <div class="t-card" style="width: 100%; height: 350px;" onclick="this.classList.toggle('flipped'); document.getElementById('hub-arena2').style.display='block';">
+                        <div class="t-front" style="background: rgba(0,0,0,0.5); font-size: 2rem; border-color: var(--accent); flex-direction: column;">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 5rem; margin-bottom: 20px; color: var(--accent);"></i>
+                            <span style="font-size: 1.5rem; color: #fff;">THE SEARCH</span>
+                        </div>
+                        <div class="t-back" style="font-size: 1.3rem; padding: 30px; line-height: 1.5; color: #fff; justify-content: center; background: var(--accent);">
+                            You are looking for Milk and Bread. Ask the supermarket worker (the teacher) where they are!
+                        </div>
+                    </div>
+                </div>
+                <div class="speaking-hub" id="hub-arena2">
+                    <p><strong>TEACHER:</strong> Act as the worker. "Hello, how can I help you?"</p>
+                    <button class="starter-btn" onclick="this.nextElementSibling.classList.toggle('active')"><i class="fa-solid fa-lightbulb"></i> Need a hint?</button>
+                    <div class="starter-content">
+                        <span class="starter-phrase">"Excuse me, where can I find the milk and the bread?"</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 24. FINAL PITCH -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2><i class="fa-solid fa-bullhorn"></i> THE FINAL PITCH</h2>
+                <p>Describe your typical grocery shopping for 60 seconds.</p>
+                <div style="background: rgba(16,185,129,0.1); border: 1px solid var(--brand-main); padding: 40px; border-radius: 20px; text-align: left; width: 100%; max-width: 700px; margin-top: 20px;">
+                    <h3 style="color:#fff; margin-bottom: 20px; font-size: 1.8rem; font-family: var(--font-display);">MISSION CHECKLIST:</h3>
+                    <ul style="color: #fff; font-size: 1.5rem; margin-left: 30px; line-height: 2;">
+                        <li>Where do you go shopping?</li>
+                        <li>Use <span style="color: var(--brand-main); font-weight: 800;">Much / Many / Some</span>.</li>
+                        <li>Mention 3 things you usually buy.</li>
+                    </ul>
+                </div>
+                <button class="btn-start" style="margin-top: 40px;" onclick="window.nextSlide()">FINISH MISSION</button>
+            </div>
+        </div>
+
+        <!-- 25. MISSION COMPLETE -->
+        <div class="slide">
+            <div class="glass-panel" style="text-align: center; border: none; box-shadow: none; background: transparent;">
+                <div style="font-size: 8rem; color: var(--correct); filter: drop-shadow(0 0 30px var(--correct)); animation: popIn 0.8s ease-out; margin-bottom: 20px;"><i class="fa-solid fa-award"></i></div>
+                <h1 style="color: var(--correct); font-size: 6rem; text-shadow: 0 10px 30px rgba(0,0,0,0.5);">SHOPPING MASTER</h1>
+                <p style="font-size: 1.8rem; color: #a3a3a3;">Congratulations, <span class="dyn-name">Student</span>! You cleared the mission.</p>
+                
+                <div class="ww-grid" style="gap: 30px; margin-top: 40px;">
+                    <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 20px; width: 250px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <i class="fa-solid fa-check-circle" style="color: var(--brand-main); font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p style="margin: 0; font-weight: 800; font-size: 1.3rem; color: #fff;">Shopping Vocab</p>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.5); padding: 30px; border-radius: 20px; width: 250px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <i class="fa-solid fa-check-circle" style="color: var(--brand-main); font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p style="margin: 0; font-weight: 800; font-size: 1.3rem; color: #fff;">Quantifiers Mastered</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <div class="progress-bar" id="p-bar"></div>
+    <div class="footer" id="main-footer">
+        <button class="nav-btn" onclick="window.prevSlide()"><i class="fa-solid fa-chevron-left"></i> BACK</button>
+        <div id="slide-num" style="font-family: var(--font-code); color: #fff; font-weight: 700; font-size: 1.3rem; letter-spacing: 2px;">1 / 25</div>
+        <button class="nav-btn next" onclick="window.nextSlide()">NEXT <i class="fa-solid fa-chevron-right" style="margin-left: 5px;"></i></button>
+    </div>
+
+    <script>
+        // Core Engine
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('p-bar');
+        const slideNum = document.getElementById('slide-num');
+
+        // Smart Dict Data with Video Timestamps
+        const dictionary = {
+            'shopping cart': { p: '/ˈʃɑː.pɪŋ kɑːrt/', d: 'A large metal basket on wheels used in supermarkets.', e: 'We are getting a shopping cart.', speak: 'Do you usually get a cart or a basket?', vStart: 42, vEnd: 50 },
+            'produce section': { p: '/ˈproʊ.duːs ˈsek.ʃən/', d: 'The area in a store where fresh fruits and vegetables are kept.', e: 'There are more fruits here in the produce section.', speak: 'What do you buy in the produce section?', vStart: 104, vEnd: 110 },
+            'weigh': { p: '/weɪ/', d: 'To find out how heavy something is.', e: 'You got to weigh the bananas.', speak: 'Do you have to weigh fruit in your country?', vStart: 228, vEnd: 236 },
+            'packaged goods': { p: '/ˈpæk.ɪdʒd ɡʊdz/', d: 'Foods that are enclosed in a container or wrapper.', e: 'Next, we need to buy some packaged goods.', speak: 'What packaged goods do you like?', vStart: 312, vEnd: 320 },
+            'detergent': { p: '/dɪˈtɜːr.dʒənt/', d: 'A liquid or powder used for washing clothes.', e: 'I also need liquid detergent to wash my clothes.', speak: 'Do you use liquid or powder detergent?', vStart: 431, vEnd: 440 },
+            'refill': { p: '/ˌriːˈfɪl/', d: 'To fill a container again.', e: 'Let\'s get big water bottles so we can refill them later.', speak: 'Do you refill your water bottles?', vStart: 624, vEnd: 635 },
+            'eggs': { p: '/eɡz/', d: 'An oval object produced by birds, eaten as food.', e: 'You think we should buy some eggs?', speak: 'How do you like your eggs cooked?', vStart: 288, vEnd: 308 },
+            'water': { p: '/ˈwɑː.t̬ɚ/', d: 'A clear liquid essential for life.', e: 'Let\'s just buy a big water.', speak: 'How much water do you drink a day?', vStart: 326, vEnd: 340 },
+            'soda': { p: '/ˈsoʊ.də/', d: 'A sweet, carbonated drink.', e: 'I think the cans would be better.', speak: 'What is your favorite soda?', vStart: 368, vEnd: 382 },
+            'compostable': { p: '/kəmˈpoʊ.stə.bəl/', d: 'Able to decay naturally and harmlessly into the soil.', e: 'These bags are 100% compostable.', speak: 'Are supermarkets in your city eco-friendly?', vStart: 554, vEnd: 566 }
+        };
+
+        window.saveName = () => {
+            const name = document.getElementById('s-name').value || "Student";
+            document.querySelectorAll('.dyn-name').forEach(el => el.innerText = name);
+            window.nextSlide();
+        };
+
+        window.nextSlide = () => {
+            if (currentSlide < slides.length - 1) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide++;
+                slides[currentSlide].classList.add('active');
+                updateUI();
+            }
+        };
+
+        window.prevSlide = () => {
+            if (currentSlide > 0) {
+                slides[currentSlide].classList.remove('active');
+                currentSlide--;
+                slides[currentSlide].classList.add('active');
+                updateUI();
+            }
+        };
+
+        function updateUI() {
+            progressBar.style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
+            slideNum.innerText = `${currentSlide + 1} / ${slides.length}`;
+            
+            // Handle iFrame audio correctly for main slides
+            slides.forEach((s, i) => {
+                const iframe = s.querySelector('.video-wrapper iframe');
+                if (iframe) {
+                    if (i === currentSlide) {
+                        if (!iframe.src || iframe.src === 'about:blank' || iframe.src === window.location.href) {
+                            iframe.src = iframe.getAttribute('data-src');
+                        }
+                    } else {
+                        iframe.src = '';
+                    }
+                }
+            });
+        }
+
+        window.toggleSidebar = (id) => {
+            document.getElementById(id).classList.toggle('open');
+            if (id === 'dict-panel' && document.getElementById(id).classList.contains('open')) {
+                slides.forEach((s) => {
+                    const iframe = s.querySelector('.video-wrapper iframe');
+                    if (iframe && iframe.src) { iframe.src = iframe.src; }
+                });
+            }
+        };
+
+        window.closeDict = () => {
+            document.getElementById('dict-panel').classList.remove('open');
+            document.getElementById('d-video').src = ''; 
+        }
+
+        window.openDict = (word) => {
+            const lower = word.toLowerCase();
+            const data = dictionary[lower] || { p: '/???/', d: 'Select a keyword.', e: '...', speak: '...' };
+            document.getElementById('d-word').innerText = word;
+            document.getElementById('d-phonetic').innerText = data.p;
+            document.getElementById('d-def').innerText = data.d;
+            document.getElementById('d-ex').innerText = `"${data.e}"`;
+            document.getElementById('d-speak').innerText = data.speak; 
+            
+            const videoWrapper = document.getElementById('d-video-wrapper');
+            const iframe = document.getElementById('d-video');
+            if (data.vStart && data.vEnd) {
+                videoWrapper.style.display = 'block';
+                iframe.src = `https://www.youtube-nocookie.com/embed/u3883nez48w?start=${data.vStart}&end=${data.vEnd}&autoplay=1&rel=0&modestbranding=1`;
+            } else {
+                videoWrapper.style.display = 'none';
+                iframe.src = '';
+            }
+
+            window.toggleSidebar('dict-panel');
+        };
+
+        window.openBox = (el, word, def, ex) => {
+            el.classList.add('opened');
+            window.openDict(word);
+            const btn = document.getElementById('btn-v1');
+            if(btn) btn.style.display = 'inline-flex';
+        };
+
+        /* TEACHER HUD FEATURES */
+        let hudTimerInt;
+        let hudTime = 60;
+        window.startTimer = function() {
+            clearInterval(hudTimerInt);
+            hudTime = 60;
+            const tEl = document.getElementById('hud-timer');
+            tEl.innerText = "00:60";
+            tEl.style.color = "var(--brand-main)";
+            
+            hudTimerInt = setInterval(() => {
+                hudTime--;
+                tEl.innerText = `00:${hudTime < 10 ? '0'+hudTime : hudTime}`;
+                if(hudTime <= 10) tEl.style.color = "var(--incorrect)";
+                if(hudTime <= 0) clearInterval(hudTimerInt);
+            }, 1000);
+        };
+
+        window.toggleCorrectionMode = function() { document.body.classList.toggle('correction-mode'); };
+        window.showAlert = function(msg, type) {
+            const overlay = document.getElementById('alert-screen');
+            const textEl = document.getElementById('alert-msg');
+            textEl.innerHTML = msg;
+            textEl.className = 'alert-text alert-' + type;
+            overlay.classList.add('show');
+            setTimeout(() => { overlay.classList.remove('show'); }, 2500);
+        };
+
+        let starCount = 0;
+        window.awardStar = function() {
+            starCount++;
+            document.getElementById('hud-stars').innerText = '⭐ ' + starCount;
+            showAlert('⭐<br>+1 POINT!', 'star');
+        };
+
+        /* --- THEMATIC GAMES LOGIC --- */
+
+        /* 0. Grammar Sandbox */
+        window.switchGrammar = function(btn, sentence, label, sentenceId, certaintyId) {
+            let siblings = btn.parentElement.children;
+            for(let s of siblings) s.classList.remove('active');
+            btn.classList.add('active');
+            
+            const words = sentence.split(' ');
+            let formatted = words.map(w => {
+                if(w.includes('MANY') || w.includes('MUCH')) return `<span style="color:var(--brand-main);">${w}</span>`;
+                return w;
+            }).join(' ');
+
+            document.getElementById(sentenceId).innerHTML = formatted;
+            document.getElementById(certaintyId).innerText = label;
+        }
+        
+        /* 1. The Weighing Scale */
+        const scaleWords = [
+            {w: 'APPLES', t: 'MANY'}, {w: 'WATER', t: 'MUCH'}, 
+            {w: 'EGGS', t: 'MANY'}, {w: 'TIME', t: 'MUCH'}, 
+            {w: 'BANANAS', t: 'MANY'}
+        ];
+        let currentScaleIndex = 0;
+        
+        window.weighItem = function(guessType) {
+            if(currentScaleIndex >= scaleWords.length) return;
+            const item = scaleWords[currentScaleIndex];
+            const display = document.getElementById('scale-display');
+            
+            if(guessType === item.t) {
+                const basket = document.getElementById(guessType === 'MUCH' ? 'basket-much' : 'basket-many');
+                const chip = document.createElement('div');
+                chip.className = 'scale-item-chip';
+                chip.innerText = item.w;
+                basket.appendChild(chip);
+                
+                currentScaleIndex++;
+                if(currentScaleIndex < scaleWords.length) {
+                    display.innerText = scaleWords[currentScaleIndex].w;
+                } else {
+                    display.innerText = "DONE!";
+                    display.style.color = "var(--correct)";
+                    document.getElementById('hub-scale').style.display = 'block';
+                }
+            } else {
+                display.style.color = "var(--incorrect)";
+                display.style.animation = 'shake 0.4s';
+                setTimeout(() => {
+                    display.style.color = "var(--brand-main)";
+                    display.style.animation = '';
+                }, 400);
+            }
+        };
+
+        /* 2. Checkout Conveyor Belt */
+        let bagState = [];
+        const bagTarget = ['We', 'do', 'not', 'need', 'that', 'much', 'stuff.'];
+        window.bagItem = function(chip) {
+            if(chip.style.opacity === '0') return;
+            
+            const word = chip.innerText;
+            const bag = document.getElementById('grocery-bag');
+            
+            const newChip = document.createElement('div');
+            newChip.className = 'grocery-item'; 
+            newChip.style.background = 'var(--brand-main)';
+            newChip.style.color = '#000';
+            newChip.innerText = word;
+            
+            if (!chip.id) chip.id = 'g_chip_' + Math.random().toString(36).substr(2, 9);
+            newChip.dataset.sourceId = chip.id;
+            
+            newChip.onclick = function() {
+                if(bag.classList.contains('success')) return;
+                bag.removeChild(this); 
+                document.getElementById(this.dataset.sourceId).style.opacity = '1';
+                document.getElementById(this.dataset.sourceId).style.pointerEvents = 'auto';
+                const idx = bagState.lastIndexOf(this.innerText);
+                if(idx !== -1) bagState.splice(idx, 1);
+            };
+            
+            bag.appendChild(newChip); 
+            chip.style.opacity = '0';
+            chip.style.pointerEvents = 'none';
+            bagState.push(word);
+
+            if(bagState.length === bagTarget.length) {
+                if(JSON.stringify(bagState) === JSON.stringify(bagTarget)) {
+                    bag.classList.add('success'); 
+                    Array.from(bag.children).forEach(c => { c.style.background = 'var(--correct)'; c.style.boxShadow = 'none'; c.style.cursor = 'default'; });
+                    document.getElementById('hub-syntax').style.display = 'block';
+                } else {
+                    bag.style.borderColor = 'var(--incorrect)'; bag.style.animation = 'shake 0.4s';
+                    setTimeout(() => {
+                        bag.innerHTML = ''; bag.style.borderColor = 'var(--brand-main)'; bag.style.animation = ''; bagState = []; 
+                        document.querySelectorAll('.conveyor-belt .grocery-item').forEach(c => { c.style.opacity = '1'; c.style.pointerEvents = 'auto'; }); 
+                    }, 1000);
+                }
+            }
+        };
+
+        /* 3. The Supermarket Receipt */
+        let receiptSolved = 0;
+        window.stampReceipt = function(btn, expectedTrue, stampId) {
+            const isTrueBtn = btn.classList.contains('t-btn');
+            const receiptItem = btn.closest('.receipt-item');
+            
+            if(isTrueBtn === expectedTrue) {
+                receiptItem.style.pointerEvents = 'none';
+                btn.parentElement.style.display = 'none';
+                const stamp = document.getElementById(stampId);
+                stamp.style.display = 'block';
+                stamp.className = isTrueBtn ? 'stamp-mark stamp-true' : 'stamp-mark stamp-false';
+                stamp.innerText = isTrueBtn ? 'TRUE' : 'FALSE';
+                
+                receiptSolved++;
+                if(receiptSolved === 3) {
+                    setTimeout(() => window.nextSlide(), 1500);
+                }
+            } else {
+                receiptItem.style.animation = 'shake 0.4s';
+                setTimeout(() => receiptItem.style.animation = '', 400);
+            }
+        };
+
+        /* 4. Aisle Navigator */
+        window.checkAisle = function(el, correct) {
+            if(correct) {
+                el.style.background = 'var(--correct)';
+                el.style.color = '#000';
+                el.style.borderColor = 'var(--correct)';
+                document.getElementById('hub-aisle').style.display = 'block';
+            } else {
+                el.style.background = 'var(--incorrect)';
+                el.style.animation = 'shake 0.4s';
+                setTimeout(() => { el.style.background = '#1e293b'; el.style.animation = ''; }, 400);
+            }
+        };
+
+        /* 5. Fill The Cart */
+        let cartItems = 0;
+        window.addToCart = function(element, isCorrect, listItemId) {
+            if(element.classList.contains('in-cart')) return;
+            if(isCorrect) {
+                element.classList.add('in-cart');
+                const listItem = document.getElementById(listItemId);
+                if(listItem) {
+                    listItem.classList.add('checked');
+                    listItem.querySelector('i').className = 'fa-solid fa-check-square';
+                }
+                cartItems++;
+                if(cartItems >= 4) { document.getElementById('hub-cart').style.display = 'block'; }
+            } else {
+                element.style.borderColor = 'var(--incorrect)'; element.style.animation = 'shake 0.4s';
+                setTimeout(() => { element.style.borderColor = 'var(--glass-border)'; element.style.animation = ''; }, 400);
+            }
+        };
+
+        /* 6. Phone UI */
+        window.advanceChat = function(btn, isCorrect, optsId, dotId) {
+            if(!isCorrect) {
+                btn.style.backgroundColor = 'var(--incorrect)';
+                btn.style.color = '#fff';
+                btn.style.borderColor = 'var(--incorrect)';
+                btn.style.animation = 'shake 0.4s';
+                setTimeout(() => { btn.style.backgroundColor = 'rgba(30, 41, 59, 0.8)'; btn.style.color = '#fff'; btn.style.borderColor = 'rgba(255,255,255,0.1)'; btn.style.animation = ''; }, 800);
+                return;
+            }
+            const text = btn.innerText;
+            const optsContainer = document.getElementById(optsId);
+            const chatArea = optsContainer.previousElementSibling;
+            optsContainer.innerHTML = '';
+            
+            const sentMsg = document.createElement('div');
+            sentMsg.className = 'phone-msg sent';
+            sentMsg.style.display = 'block';
+            sentMsg.innerText = text;
+            
+            const typingDot = document.getElementById(dotId);
+            if(typingDot) { chatArea.insertBefore(sentMsg, typingDot); typingDot.style.display = 'none'; } else { chatArea.appendChild(sentMsg); }
+            chatArea.scrollTop = chatArea.scrollHeight;
+        };
+
+        /* 7. Memory Match */
+        const memPairs = [
+            {id: 1, val: 'APPLE', match: 2}, {id: 2, val: '🍎', match: 1},
+            {id: 3, val: 'EGG', match: 4}, {id: 4, val: '🥚', match: 3},
+            {id: 5, val: 'BREAD', match: 6}, {id: 6, val: '🍞', match: 5},
+            {id: 7, val: 'MEAT', match: 8}, {id: 8, val: '🥩', match: 7}
+        ];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        window.initMemory = function() {
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            const shuffled = [...memPairs].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'mem-card';
+                card.dataset.id = item.id;
+                card.dataset.match = item.match;
+                card.innerHTML = `<div class="mem-front"><i class="fa-solid fa-question"></i></div><div class="mem-back"><span>${item.val}</span></div>`;
+                card.onclick = () => window.flipMemCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        window.flipMemCard = function(card) {
+            if(card.classList.contains('flipped') || flippedCards.length >= 2) return;
+            
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if(flippedCards.length === 2) {
+                const [c1, c2] = flippedCards;
+                if(c1.dataset.match === c2.dataset.id) {
+                    setTimeout(() => {
+                        c1.classList.add('matched'); c2.classList.add('matched');
+                        matchedPairs++;
+                        flippedCards = [];
+                        if(matchedPairs === 4) {
+                            document.getElementById('p_memory').style.display = 'block';
+                        }
+                    }, 500);
+                } else {
+                    setTimeout(() => {
+                        c1.classList.remove('flipped'); c2.classList.remove('flipped');
+                        flippedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        /* 8. Picture Reveal */
+        let tilesRemoved = 0;
+        window.removeTile = function(tile) {
+            if(tile.style.opacity === '0') return;
+            tile.style.opacity = '0';
+            tile.style.pointerEvents = 'none'; 
+            tilesRemoved++;
+            if(tilesRemoved >= 9) {
+                document.getElementById('p_reveal').style.display = 'block';
+            }
+        }
+
+        /* Quick Thinker & WYR & Topic */
+        window.spinRoom = function(btn) {
+            const categories = ["FRUITS", "VEGETABLES", "DRINKS", "SWEETS"];
+            const display = document.getElementById('room-display');
+            let count = 0;
+            btn.style.display = 'none';
+            display.style.color = "#fff";
+            const interval = setInterval(() => {
+                display.innerText = categories[Math.floor(Math.random() * categories.length)];
+                count++;
+                if(count > 15) {
+                    clearInterval(interval);
+                    display.style.color = "var(--brand-main)";
+                    document.getElementById('n3-checks-container').style.display = 'flex';
+                    document.getElementById('hub-n3').style.display = 'block';
+                }
+            }, 80);
+        };
+
+        window.checkN3 = (el) => { el.classList.add('filled'); el.innerHTML = '<i class="fa-solid fa-check"></i>'; };
+        window.selectWyr = (el) => { document.querySelectorAll('.wyr-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); document.getElementById('hub-wyr').style.display = 'block'; };
+        window.selectAgree = (btn) => { document.querySelectorAll('.agree-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); document.getElementById('hub-agree').style.display = 'block'; };
+        window.flipCard = (el, text, starter) => { if(el.classList.contains('flipped')) return; el.classList.add('flipped'); el.querySelector('.t-back').innerText = text; document.getElementById('hub-cards').style.display = 'block'; document.getElementById('cards-starter').innerText = `"${starter}"`; };
+        window.showHub = (id) => { const hub = document.getElementById(id); if (hub) hub.style.display = 'block'; };
+        window.toggleFullscreen = () => { const doc = window.document; const docEl = doc.documentElement; const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen; const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen; if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) { if (requestFullScreen) { try { const promise = requestFullScreen.call(docEl); if (promise) promise.catch(err => console.warn(err)); } catch (e) { requestFullScreen.call(docEl); } } } else { if (cancelFullScreen) cancelFullScreen.call(doc); } };
+        
+        window.onload = () => { window.initMemory(); updateUI(); };
+    </script>
+</body>
+</html>
